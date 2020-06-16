@@ -9,7 +9,8 @@ void Game::init() {
     fireGenerator(lastHiti, lastHitj); //create first coordinations
 }
 
-void Game::loop(){
+int Game::loop(){
+    Score score;
     Board background;
     sf::Event event{};
     BoardController controller;
@@ -51,10 +52,18 @@ void Game::loop(){
                 window.draw(playButton);
                 window.draw(userFleet);
                 if(computerFleet.isLocked() && userFleet.isLocked()) {
-                    if(playerTurn(event, computerFleet, background)) {
-                        if(computerFleet.getHp() == 0) {gameEnded = true; std::cout << "YOU WON" << std::endl;}
-                        computerTurn(event, userFleet, background);
-                        if(userFleet.getHp() == 0) {gameEnded = true; std::cout << "YOU LOSE" << std::endl;}
+                    if(playerTurn(event, computerFleet, background, score)) {
+                        if(computerFleet.getHp() == 0) {
+                            gameEnded = true;
+                            window.close();
+                            return score.getCurrentScore();
+                        }
+                        computerTurn(event, userFleet, background, score);
+                        if(userFleet.getHp() == 0) {
+                            gameEnded = true;
+//                            window.close();
+                            return 0;
+                        }
                     }
                     for (const auto & it : userFleet.getFleet()) {
                         if(it.operator*().getHpBar() == 0){
@@ -96,18 +105,23 @@ void Game::loop(){
     }
 }
 
-bool Game::playerTurn(sf::Event &action, Fleet &compFleet, Board &background){
+bool Game::playerTurn(sf::Event &action, Fleet &compFleet, Board &background, Score &score){
     if (action.type == sf::Event::MouseButtonPressed && action.mouseButton.button == sf::Mouse::Left) {
         for (auto j = 0; j < background.gameArraySize; j++) {
             for (auto i = 0; i < background.gameArraySize; i++) {
                 if (background.computerGameMatrix[i][j].getSquare().getGlobalBounds().contains(action.mouseButton.x, action.mouseButton.y)) {
                     if (background.computerGameMatrix[i][j].getStatus() == GameArray::empty) {
                         background.computerGameMatrix[i][j].setStatus(GameArray::missed);
+                        score.userMissedShot();
                         return true;
                     } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::ship){
                         background.computerGameMatrix[i][j].setStatus(GameArray::fire);
                         compFleet.getFleet().operator[](compFleet.getShipFromThatPosition(i, j))->setHpBar(compFleet.getFleet().operator[](compFleet.getShipFromThatPosition(i, j))->getHpBar()-1);
                         compFleet.setHp(compFleet.getHp()-1);
+                        score.computerShipHit();
+                        if(compFleet.getFleet().operator[](compFleet.getShipFromThatPosition(i, j))->getHpBar() == 0){
+                            score.computerShipHit();
+                        }
                         return true;
                     }
                 }
@@ -117,16 +131,16 @@ bool Game::playerTurn(sf::Event &action, Fleet &compFleet, Board &background){
     return false;
 }
 
-void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
+void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background, Score &score){
     computerShot = false;
     while(!computerShot) {
         int i, j;
         fireGenerator(i, j);
         if (background.userGameMatrix[lastHiti][lastHitj].getStatus() == GameArray::empty ||
             background.userGameMatrix[lastHiti][lastHitj].getStatus() == GameArray::missed) {
-
             if (background.userGameMatrix[i][j].getStatus() == GameArray::empty) {
                 background.userGameMatrix[i][j].setStatus(GameArray::missed);
+                score.computerMissedShot();
                 computerShot = true;
             } else if (background.userGameMatrix[i][j].getStatus() == GameArray::ship) {
                 background.userGameMatrix[i][j].setStatus(GameArray::fire);
@@ -136,6 +150,10 @@ void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
                 userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->setHpBar(
                         userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() - 1);
                 userFleet.setHp(userFleet.getHp() - 1);
+                score.userShipHit();
+                if(userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() == 0){
+                    score.userShipHit();
+                }
             }
         } else {
             int way;
@@ -145,10 +163,11 @@ void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
                     background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::missed
                     && background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::fire) {
                     background.userGameMatrix[lastHiti + 1][lastHitj].setStatus(GameArray::missed);
+                    score.computerMissedShot();
                     lastHiti = last2Hiti;
                     lastHitj = last2Hitj;
                     computerShot = true;
-                    computerTurn(action, userFleet, background);
+                    computerTurn(action, userFleet, background, score);
                 } else if (background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() == GameArray::ship) {
                     background.userGameMatrix[lastHiti + 1][lastHitj].setStatus(GameArray::fire);
                     last2Hiti = lastHiti;
@@ -159,14 +178,19 @@ void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
                     userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->setHpBar(
                             userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() - 1);
                     userFleet.setHp(userFleet.getHp() - 1);
+                    score.userShipHit();
+                    if(userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() == 0){
+                        score.userShipHit();
+                    }
                 }
             } else if (way == 2 && j < 8) {
                 if (background.userGameMatrix[lastHiti][lastHitj + 1].getStatus() == GameArray::empty &&
-                    background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::missed
-                    && background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::fire) {
+                    background.userGameMatrix[lastHiti][lastHitj+ 1].getStatus() != GameArray::missed
+                    && background.userGameMatrix[lastHiti ][lastHitj+ 1].getStatus() != GameArray::fire) {
                     background.userGameMatrix[lastHiti][lastHitj + 1].setStatus(GameArray::missed);
+                    score.computerMissedShot();
                     computerShot = true;
-                    computerTurn(action, userFleet, background);
+                    computerTurn(action, userFleet, background, score);
                 } else if (background.userGameMatrix[lastHiti][lastHitj + 1].getStatus() == GameArray::ship) {
                     background.userGameMatrix[lastHiti][lastHitj + 1].setStatus(GameArray::fire);
                     last2Hiti = lastHiti;
@@ -177,14 +201,19 @@ void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
                     userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->setHpBar(
                             userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() - 1);
                     userFleet.setHp(userFleet.getHp() - 1);
+                    score.userShipHit();
+                    if(userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() == 0){
+                        score.userShipHit();
+                    }
                 }
             } else if (way == 3 && i > 0) {
                 if (background.userGameMatrix[lastHiti - 1][lastHitj].getStatus() == GameArray::empty &&
-                    background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::missed
-                    && background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::fire) {
+                    background.userGameMatrix[lastHiti - 1][lastHitj].getStatus() != GameArray::missed
+                    && background.userGameMatrix[lastHiti - 1][lastHitj].getStatus() != GameArray::fire) {
                     background.userGameMatrix[lastHiti - 1][lastHitj].setStatus(GameArray::missed);
+                    score.computerMissedShot();
                     computerShot = true;
-                    computerTurn(action, userFleet, background);
+                    computerTurn(action, userFleet, background, score);
                 } else if (background.userGameMatrix[lastHiti - 1][lastHitj].getStatus() == GameArray::ship) {
                     background.userGameMatrix[lastHiti - 1][lastHitj].setStatus(GameArray::fire);
                     last2Hiti = lastHiti;
@@ -195,14 +224,19 @@ void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
                     userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->setHpBar(
                             userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() - 1);
                     userFleet.setHp(userFleet.getHp() - 1);
+                    score.userShipHit();
+                    if(userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() == 0){
+                        score.userShipHit();
+                    }
                 }
             } else if (way == 4 && j > 0) {
                 if (background.userGameMatrix[lastHiti][lastHitj - 1].getStatus() == GameArray::empty &&
-                    background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::missed
-                    && background.userGameMatrix[lastHiti + 1][lastHitj].getStatus() != GameArray::fire) {
+                    background.userGameMatrix[lastHiti][lastHitj- 1].getStatus() != GameArray::missed
+                    && background.userGameMatrix[lastHiti][lastHitj- 1].getStatus() != GameArray::fire) {
                     background.userGameMatrix[lastHiti][lastHitj - 1].setStatus(GameArray::missed);
+                    score.computerMissedShot();
                     computerShot = true;
-                    computerTurn(action, userFleet, background);
+                    computerTurn(action, userFleet, background, score);
                 } else if (background.userGameMatrix[lastHiti][lastHitj - 1].getStatus() == GameArray::ship) {
                     background.userGameMatrix[lastHiti][lastHitj - 1].setStatus(GameArray::fire);
                     last2Hiti = lastHiti;
@@ -213,6 +247,10 @@ void Game::computerTurn(sf::Event &action, Fleet &userFleet, Board &background){
                     userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->setHpBar(
                             userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() - 1);
                     userFleet.setHp(userFleet.getHp() - 1);
+                    score.userShipHit();
+                    if(userFleet.getFleet().operator[](userFleet.getShipFromThatPosition(i, j))->getHpBar() == 0){
+                        score.userShipHit();
+                    }
                 }
             }
         }

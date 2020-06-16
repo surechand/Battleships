@@ -1,13 +1,12 @@
 
 #ifndef BATTLESHIPS_GAME_H
 #define BATTLESHIPS_GAME_H
-#include <iostream>
 #include <SFML/Graphics.hpp>
 #include "BoardController.h"
 #include "ResetButton.h"
 #include "RandomizeButton.h"
 #include "PlayButton.h"
-#include "Game.h"
+#include "Score.h"
 #include <stdexcept>
 
 class Game {
@@ -20,9 +19,9 @@ private:
 public:
     Game() = default;
     void init();
-    void loop();
-    bool playerTurn(sf::Event &action, Fleet &compFleet, Board &background);
-    void computerTurn(sf::Event &action, Fleet &userFleet, Board &background);
+    int loop();
+    bool playerTurn(sf::Event &action, Fleet &compFleet, Board &background, Score &score);
+    void computerTurn(sf::Event &action, Fleet &userFleet, Board &background, Score &score);
     void fireGenerator(int &i, int &j);
     void decisionGenerator(int &i);
     void setGameEnded(bool gameEnded);
