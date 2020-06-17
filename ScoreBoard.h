@@ -11,10 +11,13 @@ class ScoreBoard {
 public:
     ScoreBoard();
 
+    /*Metoda dodająca nowy wynik wygranej do tabeli wyników*/
     void AddNewScore(int &newScore, std::string &playerName);
 
+    /*Metoda wyświetlająca tabelę wyników*/
     void ShowScoreBoard();
 
+    /*Metoda zapisująca aktualny stan tabeli wyników*/
     void SaveScoreBoard();
 };
 

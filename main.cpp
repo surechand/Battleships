@@ -4,6 +4,7 @@
 #include "Game.h"
 #include <string>
 
+/*Główna funckja programu odpowiedzialna za rozpoczęcie i zakończenie gry wraz obsługą wyniku*/
 int main(int argc,char *argv[]) {
     ScoreBoard scoreBoard;
     std::string playerName;

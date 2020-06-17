@@ -16,7 +16,7 @@ public:
     Fleet();
 
     void initFleet(bool user);
-
+    /*Metoda sprawdzająca czy cała flota zostałą umieszczona na planszy*/
     void checkPlacement();
 
     void lock();
@@ -36,7 +36,7 @@ public:
     int getHp() const;
     void setFleetHp() ;
     void setHp(int hp);
-
+    /*Metoda wyszukująca statek znajdujący się na przekazanej do funkcji pozycji*/
     int getShipFromThatPosition(int i, int j) const;
 };
 

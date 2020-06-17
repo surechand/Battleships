@@ -89,27 +89,45 @@ void BoardController::dragShipManually(sf::Event &action, Ship &ship){
     }
 }
 
-void BoardController::updateBlockade(Fleet &fleet, std::vector< std::vector<PlacementArray>> &matrix1, std::vector< std::vector<GameArray>> &matrix2){
-    for(auto & it : fleet.getFleet()){
-        if(it.operator*().isOnBoard() && !it.operator*().isCanDrag()){
-            blockTiles(it.operator*(), matrix1, it.operator*().getPlacementBoardPosX(),
-                       it.operator*().getPlacementBoardPosY());
-            setPlacementArrayToShip(it.operator*(), matrix1);
-        }
-    }
-    matrix1[1][1].setStatus(PlacementArray::forbidden);
-    for (auto j = 0; j < matrix2.size(); j++) {
-        for (auto i = 0; i < matrix2.size(); i++) {
-            if(matrix1[2*i][2*j].getStatus() == PlacementArray::ship){
-                matrix2[i][j].setStatus(GameArray::ship);
+void BoardController::checkBoard(sf::Event &action, Board &background) {
+    for (auto j = 0; j < background.gameArraySize; j++) {
+        for (auto i = 0; i < background.gameArraySize; i++) {
+            if (background.userGameMatrix[i][j].getStatus() == GameArray::empty) {
+                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color::White);
+            } else if (background.userGameMatrix[i][j].getStatus() == GameArray::missed) {
+                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color(169,169,169));
+            } else if (background.userGameMatrix[i][j].getStatus() == GameArray::fire) {
+                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color(255,69,0));
+            } else if (background.userGameMatrix[i][j].getStatus() == GameArray::destroyed){
+                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color(105,105,105));
+            }
+            if (background.computerGameMatrix[i][j].getStatus() == GameArray::empty) {
+                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color::White);
+            } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::missed) {
+                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color(169,169,169));
+            } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::fire) {
+                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color(255,69,0));
+            } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::destroyed){
+                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color(105,105,105));
             }
         }
     }
+//    for (auto j = 0; j < background.placementArraySize; j++) {
+//        for (auto i = 0; i < background.placementArraySize; i++) {
+//            if (background.userPlacementMatrix[i][j].getStatus() == PlacementArray::empty) {
+//                background.userPlacementMatrix[i][j].getSquare().setFillColor(sf::Color::White);
+//            } else if (background.userPlacementMatrix[i][j].getStatus() == PlacementArray::ship) {
+//                    background.userPlacementMatrix[i][j].getSquare().setFillColor(sf::Color::Blue);
+//            } else if (background.userPlacementMatrix[i][j].getStatus() == PlacementArray::forbidden) {
+//                background.userPlacementMatrix[i][j].getSquare().setFillColor(sf::Color::Red);
+//            }
+//        }
+//    }
 }
 
 bool BoardController::checkPlace(Ship &ship, std::vector< std::vector<PlacementArray>> &matrix, int column, int row) {
     if((ship.isShipHorizontal() && column - ship.getSize() >= -1 && column + ship.getSize() <= 19) ||
-            (!ship.isShipHorizontal() && row - ship.getSize() >= -1 && row + ship.getSize() <= 19)) {
+       (!ship.isShipHorizontal() && row - ship.getSize() >= -1 && row + ship.getSize() <= 19)) {
         if (ship.getSize() == 2) {
             if (ship.isShipHorizontal()) { // jezeli jest ustawiony horyzontalnie
                 if (matrix[column - 1][row].getStatus() == PlacementArray::empty &&
@@ -222,40 +240,22 @@ void BoardController::blockTiles(Ship &ship, std::vector< std::vector<PlacementA
     }
 }
 
-void BoardController::checkBoard(sf::Event &action, Board &background) {
-    for (auto j = 0; j < background.gameArraySize; j++) {
-        for (auto i = 0; i < background.gameArraySize; i++) {
-            if (background.userGameMatrix[i][j].getStatus() == GameArray::empty) {
-                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color::White);
-            } else if (background.userGameMatrix[i][j].getStatus() == GameArray::missed) {
-                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color(169,169,169));
-            } else if (background.userGameMatrix[i][j].getStatus() == GameArray::fire) {
-                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color(255,69,0));
-            } else if (background.userGameMatrix[i][j].getStatus() == GameArray::destroyed){
-                background.userGameMatrix[i][j].getSquare().setFillColor(sf::Color(105,105,105));
-            }
-            if (background.computerGameMatrix[i][j].getStatus() == GameArray::empty) {
-                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color::White);
-            } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::missed) {
-                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color(169,169,169));
-            } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::fire) {
-                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color(255,69,0));
-            } else if (background.computerGameMatrix[i][j].getStatus() == GameArray::destroyed){
-                background.computerGameMatrix[i][j].getSquare().setFillColor(sf::Color(105,105,105));
+void BoardController::updateBlockade(Fleet &fleet, std::vector< std::vector<PlacementArray>> &matrix1, std::vector< std::vector<GameArray>> &matrix2){
+    for(auto & it : fleet.getFleet()){
+        if(it.operator*().isOnBoard() && !it.operator*().isCanDrag()){
+            blockTiles(it.operator*(), matrix1, it.operator*().getPlacementBoardPosX(),
+                       it.operator*().getPlacementBoardPosY());
+            setPlacementArrayToShip(it.operator*(), matrix1);
+        }
+    }
+    matrix1[1][1].setStatus(PlacementArray::forbidden);
+    for (auto j = 0; j < matrix2.size(); j++) {
+        for (auto i = 0; i < matrix2.size(); i++) {
+            if(matrix1[2*i][2*j].getStatus() == PlacementArray::ship){
+                matrix2[i][j].setStatus(GameArray::ship);
             }
         }
     }
-//    for (auto j = 0; j < background.placementArraySize; j++) {
-//        for (auto i = 0; i < background.placementArraySize; i++) {
-//            if (background.userPlacementMatrix[i][j].getStatus() == PlacementArray::empty) {
-//                background.userPlacementMatrix[i][j].getSquare().setFillColor(sf::Color::White);
-//            } else if (background.userPlacementMatrix[i][j].getStatus() == PlacementArray::ship) {
-//                    background.userPlacementMatrix[i][j].getSquare().setFillColor(sf::Color::Blue);
-//            } else if (background.userPlacementMatrix[i][j].getStatus() == PlacementArray::forbidden) {
-//                background.userPlacementMatrix[i][j].getSquare().setFillColor(sf::Color::Red);
-//            }
-//        }
-//    }
 }
 
 void BoardController::resetBoard(std::vector< std::vector<PlacementArray>> &matrix1, std::vector< std::vector<GameArray>> &matrix2){

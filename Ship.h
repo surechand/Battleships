@@ -26,6 +26,7 @@ public:
 
     int getSize() const;
 
+    /*Metoda zmieniająca grafikę statku w przypadku jego zniszczenia*/
     void loadDestroyedTexture();
 
     int getPlacementBoardPosX() const;
@@ -73,7 +74,9 @@ public:
     int getHpBar() const;
     void setHpBar(int hpBar);
 
+    /*Metoda dodająca zajmowaną pozycję na planszy gry do kontenera positionsOnGameBoard*/
     void addPosition(int i, int j);
+    /*Metoda usuwająca wszystkie pozycje z kontenera positionsOnGameBoard*/
     void clearPositions();
     const std::vector<std::pair<int,int>> &getPositionsOnGameBoard() const;
 

@@ -11,7 +11,7 @@ void Board::draw(sf::RenderTarget &target, sf::RenderStates state) const {
     target.draw(this->background, state);
     for(int j=0; j < gameArraySize; j++) {
         for (int i = 0; i < gameArraySize; i++) {
-                target.draw(this->userGameMatrix[i][j], state);
+            target.draw(this->userGameMatrix[i][j], state);
         }
     }
     for(int j=0; j < gameArraySize; j++) {
@@ -19,6 +19,7 @@ void Board::draw(sf::RenderTarget &target, sf::RenderStates state) const {
             target.draw(this->computerGameMatrix[i][j], state);
         }
     }
+    /*Funckja kontrolna do monitorowania układu macierzy umieszczania*/
 //    for(int j=0; j < placementArraySize; j++) {
 //        for (int i = 0; i < placementArraySize; i++) {
 //            if(j%2==0 || i%2 == 0) {

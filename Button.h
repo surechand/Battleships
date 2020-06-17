@@ -5,7 +5,7 @@
 #include "SFML/Graphics.hpp"
 #include "Fleet.h"
 #include "Board.h"
-
+/*Klasa wirtualna umożliwiająca operowanie początkową fazą gry za pomocą przycisków*/
 class Button : public sf::Drawable {
 protected:
     sf::CircleShape circle;
