@@ -7,7 +7,7 @@
 #include <memory>
 #include <deque>
 
-class Fleet : public sf::Drawable {
+class Fleet : public Ship {
     std::deque<std::unique_ptr<Ship>> fleet;
     bool PlacedOnBoard;
     bool locked;
@@ -24,8 +24,8 @@ public:
     bool isPlacedOnBoard() const;
     void setIsPlacedOnBoard(bool isPlacedOnBoard);
 
-    bool isLocked() const;
-    void setLocked(bool locked);
+    bool isLocked() const override;
+    void setLocked(bool locked) override;
 
     void draw (sf::RenderTarget& target, sf::RenderStates state) const override;
 

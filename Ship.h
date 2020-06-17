@@ -68,8 +68,8 @@ public:
     float getDefaultRotation() const;
     void setDefaultRotation(float defaultRotation);
 
-    bool isLocked() const;
-    void setLocked(bool locked);
+    virtual bool isLocked() const;
+    virtual void setLocked(bool locked);
 
     int getHpBar() const;
     void setHpBar(int hpBar);
